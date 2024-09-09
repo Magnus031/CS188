@@ -29,8 +29,16 @@ def shopSmart(orderList, fruitShops):
         orderList: List of (fruit, numPound) tuples
         fruitShops: List of FruitShops
     """
+    global ptr
     "*** YOUR CODE HERE ***"
-    return None
+    min = 100000.0
+    # ptr = fruitShops[0]
+    for j in fruitShops:
+        sum = j.getPriceOfOrder(orderList)
+        if(sum<min):
+            min = sum
+            ptr = j
+    return ptr
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ import util
 from game import Directions
 from typing import List
 
-from util import Stack, Queue
+from util import Stack, Queue, PriorityQueue
 
 
 class SearchProblem:
@@ -157,8 +157,36 @@ def breadthFirstSearch(problem: SearchProblem) -> List[Directions]:
 
 def uniformCostSearch(problem: SearchProblem) -> List[Directions]:
     """Search the node of least total cost first."""
+    # Here PriorityQueue we store for the action cost as the priority
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    pq = PriorityQueue()
+    # We should store for a node
+    # This the distance to the start node with its path
+    ucsMap = {}
+
+    start_state = problem.getStartState()
+    start_action = []
+    pq.push((start_state, start_action, 0),0)
+    ucsMap[start_state] = (start_action, 0)
+
+    while pq:
+        # we take a node from the pq everytime
+        state, action, cost = pq.pop()
+
+        # if we find the goal state
+        if problem.isGoalState(state):
+            return action
+
+        successor = problem.getSuccessors(state)
+        for next_successor, action_, cost_ in successor:
+            # for every node we test
+            current_action = action + [action_]
+            new_cost = cost + cost_
+            if next_successor not in ucsMap or (new_cost < ucsMap[next_successor][1]):
+                ucsMap[next_successor] = (current_action, new_cost)
+                pq.push((next_successor, current_action, new_cost), new_cost)
+
+    return []
 
 def nullHeuristic(state, problem=None) -> float:
     """

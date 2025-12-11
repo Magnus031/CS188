@@ -16,7 +16,6 @@
 In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
-
 import util
 from game import Directions
 from typing import List
@@ -198,7 +197,35 @@ def nullHeuristic(state, problem=None) -> float:
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic) -> List[Directions]:
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    pq = PriorityQueue()
+    # Used to store for the path && cost
+    aStarMap = {}
+
+    start_state = problem.getStartState()
+    start_action = []
+    # There is one thing that we need to get know is that the position is recorded in the
+    # First Postion of the state
+    mandistance = heuristic(start_state, problem)
+    pq.push((start_state, start_action, 0), mandistance)
+    aStarMap[start_state] = (start_action, 0)
+
+    while pq:
+        # we take a node from the pq with the lowest priority
+        node_, action_, cost_ = pq.pop()
+
+        # base case
+        if problem.isGoalState(node_):
+            return action_
+
+        successors = problem.getSuccessors(node_)
+        for next_, next_action_, next_cost in successors:
+            new_manDistance = next_cost + cost_ + heuristic(next_, problem)
+            new_action = action_ + [next_action_]
+
+            if next_ not in aStarMap or (aStarMap[next_][1] > next_cost + cost_):
+                aStarMap[next_] = (new_action, next_cost + cost_)
+                pq.push((next_, new_action, next_cost + cost_), new_manDistance)
+    return []
 
 # Abbreviations
 bfs = breadthFirstSearch

@@ -7,4 +7,10 @@ This is my solutions for the CS188 Lessons
 	- Finished
 
 - Project1 Search
-	- Todo
+	- Finished
+
+> This Project Actually need to make an great understanding with all the Search Algorithms, Like DFS, BFS, UCS, A* Search.
+> Before do this Project, you'd better to read the Lecture Notes about Search Algorithms.
+
+- Project2 Multi-Agent Search
+	- TODO

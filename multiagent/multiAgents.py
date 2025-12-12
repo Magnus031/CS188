@@ -176,7 +176,59 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        score, action = self.value(gameState, 0, 0)
+        return action
+
+    def value(self, gameState: GameState, agentIndex, currentDepth):
+        # base case
+        if gameState.isLose() or gameState.isWin():
+            return self.evaluationFunction(gameState), Directions.STOP
+
+        if currentDepth == self.depth:
+            return self.evaluationFunction(gameState), Directions.STOP
+        # select for which the agent will be the next
+        numAgents = gameState.getNumAgents()
+        nextAgentIndex = (agentIndex + 1) % numAgents
+        # count for the next Depth
+        nextAgentDepth = currentDepth + 1 if nextAgentIndex == 0 else currentDepth
+        legalActions = gameState.getLegalActions(agentIndex)
+
+        if agentIndex == 0:
+            return self.max_value(gameState, legalActions, nextAgentIndex, nextAgentDepth)
+        else:
+            return self.min_value(gameState, agentIndex, legalActions, nextAgentIndex, nextAgentDepth)
+
+
+    def max_value(self, gameState, legalActions, nextAgentIndex, nextDepth):
+        # we should return the max value of the legal Actions;
+        bestScore = -float('inf')
+        bestAction = Directions.STOP
+
+        for action in legalActions:
+            successor = gameState.generateSuccessor(0, action)
+
+            score, _ = self.value(successor, nextAgentIndex, nextDepth)
+
+            if score > bestScore:
+                bestScore = score
+                bestAction = action
+        return bestScore, bestAction
+
+    def min_value(self, gameState, agentIndex, legalActions, nextAgentIndex, nextDepth):
+        # we should return the min value of the legal Actions;
+        bestScore = float('inf')
+        bestAction = Directions.STOP
+
+        for action in legalActions:
+            successor = gameState.generateSuccessor(agentIndex, action)
+
+            score, _ = self.value(successor, nextAgentIndex, nextDepth)
+
+            if score < bestScore:
+                bestScore = score
+                bestAction = action
+
+        return bestScore, bestAction
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """

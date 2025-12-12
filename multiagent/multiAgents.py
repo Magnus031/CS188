@@ -43,6 +43,7 @@ class ReflexAgent(Agent):
         legalMoves = gameState.getLegalActions()
 
         # Choose one of the best actions
+        # Actually, we need to modify the evaluationFunction with the specific action
         scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
         bestScore = max(scores)
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
@@ -73,10 +74,49 @@ class ReflexAgent(Agent):
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
 
+        x, y = newPos
+        FoodPos = newFood.asList()
+
+        minDistance = 1
+        # We assume the score1 for the minDistance to the Food which has not Eaten
+        # This is the weight of the distance between the pacman with the pellt
+        w1 = 10.0
+        # This is the weight of the number of the rest-pellts
+        w2 = -500.0
+        # This is the weight of the distance of the ghost
+        # Only when the distance <= 2 it will do factor
+        w3 = -100000.0
+        # This is the weight of the base score
+        w4 = 100.0
+        w5 = 10.0
+
+        if len(FoodPos) > 0:
+            minDistance = min([util.manhattanDistance(newPos, food) for food in FoodPos])
+
+        if minDistance == 0:
+            minDistance = 1
+
+        count = len(FoodPos)
+
+        flag = False
+        minGhostDistance = 100000
+        index = 0
+        for i in range(len(newGhostStates)):
+            ghost = newGhostStates[i]
+            gx, gy = ghost.getPosition()
+            distance = abs(gx - x) + abs(gy - y)
+            if distance < minGhostDistance:
+                minGhostDistance = distance
+                index = i
+                if distance < 2 and newScaredTimes[i] == 0:
+                    flag = True
+                    break
+
+        sum_ = w1 * (1 / minDistance) + w2 * count + (w3 if flag else (newScaredTimes[index] * w5)) + w4 * successorGameState.getScore()
+
+        return sum_
 def scoreEvaluationFunction(currentGameState: GameState):
     """
     This default evaluation function just returns the score of the state.

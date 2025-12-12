@@ -1,0 +1,26 @@
+# 忽略 JetBrains 系列 IDE（PyCharm/IntelliJ 等）的配置目录
+.idea/
+
+# 忽略 VS Code 的配置目录
+.vscode/
+
+# 忽略 Python 编译生成的字节码目录（__pycache__）
+__pycache__/
+
+# 补充：忽略 Python 单个 .pyc 字节码文件（防止漏检）
+*.pyc
+*.pyo
+*.pyd
+*.pyi
+__pycache__/
+.pytest_cache/
+.coverage
+*.egg-info/
+dist/
+build/
+
+# 可选：忽略其他常见无用文件（按需保留）
+.DS_Store       # Mac 系统隐藏文件
+Thumbs.db       # Windows 系统缩略图文件
+*.log           # 日志文件
+*.tmp           # 临时文件

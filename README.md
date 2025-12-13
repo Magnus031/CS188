@@ -13,4 +13,12 @@ This is my solutions for the CS188 Lessons
 > Before do this Project, you'd better to read the Lecture Notes about Search Algorithms.
 
 - Project2 Multi-Agent Search
-	- TODO
+    - Finished
+
+> This Project is focus on some Algorithm about adversarial search like:
+> - MiniMax
+> - Alpha-Beta Pruning
+> - Expectimax
+
+- Project3 Logic and Classical Planning
+	- TODO 

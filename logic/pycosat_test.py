@@ -13,8 +13,15 @@
 
 
 import pycosat
+from logicPlan import *
 
-cnf = [[1, -5, 4], [-1, 5, 3, 4], [-3, -4]]
+print(sentence1())
 
-print(pycosat.solve(cnf))
+ans = findModel(sentence1())
+print(ans)
+# cnf = [[1, -5, 4], [-1, 5, 3, 4], [-3, -4]]
+
+# print(pycosat.solve(cnf))
+# prop = "B <=> (P1|P2)"
+# ans = to_cnf(prop)
 

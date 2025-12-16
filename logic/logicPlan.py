@@ -50,9 +50,15 @@ def sentence1() -> Expr:
     (not A) or (not B) or C
     """
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    AnsList = []
+    SubSent1 = Expr('A') | Expr('B')
+    AnsList.append(SubSent1)
+    SubSent2 = Expr('<=>', ~Expr('A'), (~Expr('B') | Expr('C')))
+    AnsList.append(SubSent2)
+    SubSent3 = Expr('|', ~Expr('A'), ~Expr('B'), Expr('C'))
+    AnsList.append((SubSent3))
     "*** END YOUR CODE HERE ***"
-
+    return conjoin(AnsList)
 
 def sentence2() -> Expr:
     """Returns a Expr instance that encodes that the following expressions are all true.
@@ -63,9 +69,14 @@ def sentence2() -> Expr:
     (not D) implies C
     """
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    AnsList = []
+    S1 = Expr('<=>', Expr('C'), Expr('|', Expr('B'), Expr('D')))
+    S2 = Expr('>>', Expr('A'), Expr('&', ~Expr('B'), ~Expr('D')))
+    S3 = Expr('>>', ~Expr('&', Expr('B'), ~Expr('C')), Expr('A'))
+    S4 = Expr('>>', ~Expr('D'), Expr('C'))
+    AnsList = [S1, S2, S3, S4]
     "*** END YOUR CODE HERE ***"
-
+    return conjoin(AnsList)
 
 def sentence3() -> Expr:
     """Using the symbols PacmanAlive_1 PacmanAlive_0, PacmanBorn_0, and PacmanKilled_0,
@@ -80,8 +91,19 @@ def sentence3() -> Expr:
     Pacman is born at time 0.
     """
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    s1 = PropSymbolExpr('PacmanAlive',time=0)
+    s2 = PropSymbolExpr('PacmanAlive', time=1)
+    s3 = PropSymbolExpr('PacmanBorn', time=0)
+    s4 = PropSymbolExpr('PacmanKilled', time=0)
+    Sub1 = Expr('<=>', s2, (s1 & ~s4 | ~s1 & s3))
+    # print(Sub1)
+    Sub2 = ~Expr('&', s1, s3)
+    # print(Sub2)
+    Sub3 = s3
+    AnsList = [Sub1, Sub2, Sub3]
     "*** END YOUR CODE HERE ***"
+    return conjoin(AnsList)
+
 
 def findModel(sentence: Expr) -> Dict[Expr, bool]:
     """Given a propositional logic sentence (i.e. a Expr instance), returns a satisfying
@@ -96,25 +118,29 @@ def findModelUnderstandingCheck() -> Dict[Expr, bool]:
     """
     a = Expr('A')
     "*** BEGIN YOUR CODE HERE ***"
-    print("a.__dict__ is:", a.__dict__) # might be helpful for getting ideas
-    util.raiseNotDefined()
+    # print("a.__dict__ is:", a.__dict__) # might be helpful for getting ideas
     "*** END YOUR CODE HERE ***"
+    a_lower = object.__new__(Expr)
+    a_lower.op = 'a'
+    a_lower.args = ()
+    return {a_lower : True}
+
 
 def entails(premise: Expr, conclusion: Expr) -> bool:
     """Returns True if the premise entails the conclusion and False otherwise.
     """
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
     "*** END YOUR CODE HERE ***"
+    return findModel(~(premise >> conclusion)) == False
 
 def plTrueInverse(assignments: Dict[Expr, bool], inverse_statement: Expr) -> bool:
     """Returns True if the (not inverse_statement) is True given assignments and False otherwise.
     pl_true may be useful here; see logic.py for its description.
     """
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
 
+    "*** END YOUR CODE HERE ***"
+    return pl_true(~inverse_statement, assignments)
 #______________________________________________________________________________
 # QUESTION 2
 
@@ -138,8 +164,8 @@ def atLeastOne(literals: List[Expr]) -> Expr:
     True
     """
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    return disjoin(literals)
+
 
 
 def atMostOne(literals: List[Expr]) -> Expr:
@@ -150,8 +176,11 @@ def atMostOne(literals: List[Expr]) -> Expr:
     itertools.combinations may be useful here.
     """
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    ansList = []
+    combination = itertools.combinations(literals, 2)
+    for com in combination:
+        ansList.append(Expr('|', ~com[0], ~com[1]))
+    return conjoin(ansList)
 
 
 def exactlyOne(literals: List[Expr]) -> Expr:
@@ -161,8 +190,7 @@ def exactlyOne(literals: List[Expr]) -> Expr:
     the expressions in the list is true.
     """
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    return atLeastOne(literals) & atMostOne(literals)
 
 #______________________________________________________________________________
 # QUESTION 3
@@ -188,14 +216,17 @@ def pacmanSuccessorAxiomSingle(x: int, y: int, time: int, walls_grid: List[List[
         possible_causes.append( PropSymbolExpr(pacman_str, x+1, y, time=last) 
                             & PropSymbolExpr('West', time=last))
     if walls_grid[x-1][y] != 1:
-        possible_causes.append( PropSymbolExpr(pacman_str, x-1, y, time=last) 
+        possible_causes.append( PropSymbolExpr(pacman_str, x-1, y, time=last)
                             & PropSymbolExpr('East', time=last))
     if not possible_causes:
         return None
     
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    current_pos = PropSymbolExpr(pacman_str, x, y, time = now)
+    possible_causes_ : Expr = disjoin(possible_causes)
+    return current_pos % possible_causes_
+
+
 
 
 def SLAMSuccessorAxiomSingle(x: int, y: int, time: int, walls_grid: List[List[bool]]) -> Expr:
@@ -203,6 +234,9 @@ def SLAMSuccessorAxiomSingle(x: int, y: int, time: int, walls_grid: List[List[bo
     Similar to `pacmanSuccessorStateAxioms` but accounts for illegal actions
     where the pacman might not move timestep to timestep.
     Available actions are ['North', 'East', 'South', 'West']
+    There are 2 dimensions:
+    1. position
+    2. direction
     """
     now, last = time, time - 1
     moved_causes: List[Expr] = [] # enumerate all possible causes for P[x,y]_t, assuming moved to having moved
@@ -253,7 +287,7 @@ def pacphysicsAxioms(t: int, all_coords: List[Tuple], non_outer_wall_coords: Lis
             the sensor model axioms. If None, it's not provided, so shouldn't be run.
         successorAxioms(t, walls_grid, non_outer_wall_coords) -> Expr: function that generates
             the sensor model axioms. If None, it's not provided, so shouldn't be run.
-    Return a logic sentence containing all of the following:
+    Return a logic sentence containing of the following:
         - for all (x, y) in all_coords:
             If a wall is at (x, y) --> Pacman is not at (x, y)
         - Pacman is at exactly one of the squares at timestep t.
@@ -265,7 +299,30 @@ def pacphysicsAxioms(t: int, all_coords: List[Tuple], non_outer_wall_coords: Lis
     pacphysics_sentences = []
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # The First Constraint If (x, y) is the wall that, it mustn't be the position which pacman can be
+    # wallAt(x, y) -> ~PacmanAt(x, y)
+    # wallList used to store the sentences that it doesn't exist the pacman at (x, y)
+    for (x, y) in all_coords:
+        wall_at_xy = PropSymbolExpr(wall_str, x, y)
+        pacman_at_xy_t = PropSymbolExpr(pacman_str, x, y, time = t)
+        pacphysics_sentences.append(wall_at_xy >> ~pacman_at_xy_t)
+
+    # Pacman is at exactly one of the non-wall position at time t
+    pacman_at_position = [PropSymbolExpr(pacman_str, x, y, time = t) for (x, y) in non_outer_wall_coords]
+    pacphysics_sentences.append(exactlyOne(pacman_at_position))
+
+    # Pacman takes exactly one action at time t
+    pacman_actions = [PropSymbolExpr(action, time=t) for action in DIRECTIONS]
+    pacphysics_sentences.append(exactlyOne(pacman_actions))
+
+    # Sensor model axioms (if provided)
+    if sensorModel is not None:
+        pacphysics_sentences.append(sensorModel(t, non_outer_wall_coords))
+
+    # sucessorAxioms
+    if t > 0 and successorAxioms is not None:
+        pacphysics_sentences.append(successorAxioms(t, walls_grid, non_outer_wall_coords))
+
     "*** END YOUR CODE HERE ***"
 
     return conjoin(pacphysics_sentences)
@@ -285,8 +342,18 @@ def checkLocationSatisfiability(x1_y1: Tuple[int, int], x0_y0: Tuple[int, int], 
     Return:
         - a model where Pacman is at (x1, y1) at time t = 1
         - a model where Pacman is not at (x1, y1) at time t = 1
+
+    - pacphysicsAxioms(t, ...) represents, given the time t, generates a set of Axioms, only these Axioms are
+      satisfied, to make sure pacman is reasonable in the physical and logical state trans.
+    - SLAMSuccessorAxiomSingle(x, y, time, ...) represents the case taht Pacman try to move, but stay in the
+      same position.
+    - pacphyicsAxioms(t, ...) gather all general physics/logical rules, building a KB (knowledge base) of time t
     """
+
+
+
     walls_grid = problem.walls
+    # the coords set of the walls
     walls_list = walls_grid.asList()
     all_coords = list(itertools.product(range(problem.getWidth()+2), range(problem.getHeight()+2)))
     non_outer_wall_coords = list(itertools.product(range(1, problem.getWidth()+1), range(1, problem.getHeight()+1)))
@@ -299,8 +366,35 @@ def checkLocationSatisfiability(x1_y1: Tuple[int, int], x0_y0: Tuple[int, int], 
     KB.append(conjoin(map_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # We need to return 2 models
+    # model1 : where pacman is at (x1, y1) at time t = 1
+    # model2: where pacman is not at (x1, y1) at time t = 1
+    # Acturally, we just need to get a CNF expression of the pacman stay at (x1, y1) at time = 1
+    # Fact1 : t = 0, that pacman At (x0, y0, 0) and action (A0, 0)
+
+    # For t in [0, 1]
+    for t in [0, 1]:
+        if t == 0:
+            axioms_t = pacphysicsAxioms(t, all_coords, non_outer_wall_coords, walls_grid=walls_grid,
+                                        sensorModel = None, successorAxioms=None)
+        else:
+            axioms_t = pacphysicsAxioms(t, all_coords, non_outer_wall_coords, walls_grid=walls_grid,
+                                        sensorModel=None, successorAxioms=allLegalSuccessorAxioms)
+        KB.append(axioms_t)
+
+    # pacman's current position is at (x0, y0)
+    KB.append(PropSymbolExpr(pacman_str, x0, y0, time = 0))
+    KB.append(PropSymbolExpr(action0, time = 0))
+    KB.append(PropSymbolExpr(action1, time = 1))
+
+    KB_conjoin = conjoin(KB)
+
+    pacman_at_x1_y1_t1 = PropSymbolExpr(pacman_str, x1, y1, time = 1)
+    model1 = findModel(KB_conjoin & pacman_at_x1_y1_t1)
+
+    model2 = findModel(KB_conjoin & ~pacman_at_x1_y1_t1)
     "*** END YOUR CODE HERE ***"
+    return (model1, model2)
 
 #______________________________________________________________________________
 # QUESTION 4
@@ -321,13 +415,35 @@ def positionLogicPlan(problem) -> List:
     # Get lists of possible locations (i.e. without walls) and possible actions
     all_coords = list(itertools.product(range(width + 2), 
             range(height + 2)))
+    # Here we used the non_wall_coords;
     non_wall_coords = [loc for loc in all_coords if loc not in walls_list]
     actions = [ 'North', 'South', 'East', 'West' ]
     KB = []
-
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # initial knowledge
+    KB.append(PropSymbolExpr(pacman_str, x0, y0, time = 0))
+    # we do the loop for 1 - 50 timestamps;
+    for t in range(50):
+        print(f"Now it is timestamp: {t}")
+        # in time = t, the pacman is exactly can be one direction;
+        # Step1 : we enumerate all the possible position of non_wall_coors
+        pacman_at_position = [PropSymbolExpr(pacman_str, x, y, time = t) for (x, y) in non_wall_coords]
+        KB.append(exactlyOne(pacman_at_position))
+        # Step2 : pacman can take one action at each timestamp
+        KB.append(exactlyOne([PropSymbolExpr(action, time=t) for action in actions]))
+        # Add transition model sentences for pacman positions
+        for (x, y) in non_wall_coords:
+            transition_axiom = pacmanSuccessorAxiomSingle(x, y, t+1, walls_grid)
+            if transition_axiom:
+                KB.append(transition_axiom)
+
+        goal_assertion = PropSymbolExpr(pacman_str, xg, yg, time = t)
+        model = findModel(conjoin(KB + [goal_assertion]))
+
+        if model:
+            return extractActionSequence(model, actions)
     "*** END YOUR CODE HERE ***"
+    return []
 
 #______________________________________________________________________________
 # QUESTION 5

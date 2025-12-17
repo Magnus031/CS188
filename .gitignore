@@ -1,3 +1,4 @@
+.DS_Store
 **/.DS_Store       # Mac 系统隐藏文件
 # 忽略 JetBrains 系列 IDE（PyCharm/IntelliJ 等）的配置目录
 .idea/

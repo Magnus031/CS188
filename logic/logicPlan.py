@@ -95,8 +95,11 @@ def sentence3() -> Expr:
     s2 = PropSymbolExpr('PacmanAlive', time=1)
     s3 = PropSymbolExpr('PacmanBorn', time=0)
     s4 = PropSymbolExpr('PacmanKilled', time=0)
+    # Pacman is alive at time 1 iff (he was alive at time0) and he was not killed at time 0.
+    # Or he was not alive at time 0 and he was born at time0
     Sub1 = Expr('<=>', s2, (s1 & ~s4 | ~s1 & s3))
     # print(Sub1)
+    # At time0, pacman cannot both be alive and be born
     Sub2 = ~Expr('&', s1, s3)
     # print(Sub2)
     Sub3 = s3
@@ -429,19 +432,21 @@ def positionLogicPlan(problem) -> List:
         # Step1 : we enumerate all the possible position of non_wall_coors
         pacman_at_position = [PropSymbolExpr(pacman_str, x, y, time = t) for (x, y) in non_wall_coords]
         KB.append(exactlyOne(pacman_at_position))
-        # Step2 : pacman can take one action at each timestamp
-        KB.append(exactlyOne([PropSymbolExpr(action, time=t) for action in actions]))
-        # Add transition model sentences for pacman positions
-        for (x, y) in non_wall_coords:
-            transition_axiom = pacmanSuccessorAxiomSingle(x, y, t+1, walls_grid)
-            if transition_axiom:
-                KB.append(transition_axiom)
-
+        # Step2 : check whether
         goal_assertion = PropSymbolExpr(pacman_str, xg, yg, time = t)
         model = findModel(conjoin(KB + [goal_assertion]))
 
         if model:
             return extractActionSequence(model, actions)
+
+        KB.append(exactlyOne([PropSymbolExpr(action, time=t) for action in actions]))
+        # Add transition model sentences for pacman positions
+        for (x, y) in non_wall_coords:
+            transition_axiom = pacmanSuccessorAxiomSingle(x, y, t + 1, walls_grid)
+            # Actually transition_axiom = pacman[x, y]_t+1 % possible_causes
+            # Here transition_axiom is equivalent expression, A <-> B, A B must be the same
+            if transition_axiom:
+                KB.append(transition_axiom)
     "*** END YOUR CODE HERE ***"
     return []
 
@@ -459,7 +464,9 @@ def foodLogicPlan(problem) -> List:
     walls = problem.walls
     width, height = problem.getWidth(), problem.getHeight()
     walls_list = walls.asList()
+    # Here in this subproblem that the start state is start position && food
     (x0, y0), food = problem.start
+    # get all the food pos tuple in the list
     food = food.asList()
 
     # Get lists of possible locations (i.e. without walls) and possible actions
@@ -471,7 +478,41 @@ def foodLogicPlan(problem) -> List:
     KB = []
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # goalAssertion
+    # conjoin(~Food[x,y]_t), actually in the time t that every food is run out of.
+    # Initial position in time 0
+    KB.append(PropSymbolExpr(pacman_str, x0, y0, time = 0))
+    # Initial the food
+    for (x, y) in food:
+        # append every food into the KB
+        KB.append(PropSymbolExpr(food_str, x, y, time = 0))
+
+    for t in range(50):
+        print(f"The timeStep is {t}")
+        # Pacman only can be in one location at each timestep
+        pacman_at_position = [PropSymbolExpr(pacman_str, x, y, time=t) for (x, y) in non_wall_coords]
+        KB.append(exactlyOne(pacman_at_position))
+        # Pacman only can do one action
+        KB.append(exactlyOne([PropSymbolExpr(action, time = t) for action in actions]))
+        # Add the transition function
+        for (x, y) in non_wall_coords:
+            transition_axiom = pacmanSuccessorAxiomSingle(x, y, t + 1, walls)
+            if transition_axiom:
+                KB.append(transition_axiom)
+        # The above solve a problem that, we enumerate all the possible of pacman do action and get the transition
+        for (x, y) in food:
+            food_now = PropSymbolExpr(food_str, x, y, time = t)
+            food_next = PropSymbolExpr(food_str, x, y, time = t+1)
+            pacman_now = PropSymbolExpr(pacman_str, x, y, time = t)
+            KB.append(food_next % (food_now & ~pacman_now))
+
+        goal_assertion = conjoin([~PropSymbolExpr(food_str, x, y, time = t) for (x, y) in food])
+        model = findModel(conjoin(KB + [goal_assertion]))
+
+        if model:
+            return extractActionSequence(model, actions)
+        # Add food successor axioms
+    return []
     "*** END YOUR CODE HERE ***"
 
 #______________________________________________________________________________
